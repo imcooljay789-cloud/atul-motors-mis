@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>ATUL MOTORS | Comprehensive Executive MIS & PMS Matrix Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0b1f4d, #123c8c, #1d5fd0); color: white; padding: 20px; min-height: 100vh; margin: 0; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.15); }
+        .btn { background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn:hover { background: #1d4ed8; }
+        .section-title { font-size: 18px; margin: 25px 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .kpi-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 18px; border-radius: 12px; }
+        .kpi-card b { display: block; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; margin-bottom: 6px; }
+        .kpi-card h2 { font-size: 24px; font-weight: 700; margin: 0; }
+        .tabs-container { display: flex; gap: 8px; margin-top: 20px; border-bottom: 2px solid rgba(255,255,255,0.15); padding-bottom: 2px; }
+        .tab-btn { background: transparent; border: none; color: rgba(255,255,255,0.6); padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .tab-btn:hover { color: #fff; }
+        .tab-btn.active { color: #fff; border-bottom: 2px solid #fff; }
+        .data-view { display: none; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; padding: 15px; margin-top: 15px; overflow-x: auto; }
+        .data-view.active { display: block; }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+        th, td { padding: 10px 12px; border: 1px solid rgba(255,255,255,0.12); white-space: nowrap; }
+        th { background: #2563eb; text-transform: uppercase; font-size: 11px; }
+        .pms-group-header { background: #1e40af; font-size: 12px; font-weight: bold; }
+        .loc-col { text-align: left; font-weight: bold; background: #123c8c !important; position: sticky; left: 0; z-index: 5; }
+        .total-col { background: rgba(16, 185, 129, 0.2); font-weight: bold; }
+        tr:nth-child(even) td:not(.loc-col) { background: rgba(255, 255, 255, 0.03); }
+        .target-met { color: #4ade80; font-weight: bold; }
+        .target-miss { color: #f87171; font-weight: bold; }
+        .target-none { color: rgba(255,255,255,0.4); font-weight: normal; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>ATUL MOTORS | TOTAL OPERATIONS EXECUTIVE MIS</h1>
+        <button class="btn" onclick="exportMasterPDF()">Export Full Dashboard PDF</button>
+    </header>
+    <div class="section-title">Operations & Sales Snapshot</div>
+    <div id="salesKpiContainer" class="cards-grid" style="margin-bottom:20px;"></div>
+    <div class="section-title">Inventory & Fulfillment Snapshot</div>
+    <div id="inventoryKpiContainer" class="cards-grid" style="margin-bottom:20px;"></div>
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchViewTab('pmsMatrixView', this)">PMS Fulfillment Matrix</button>
+        <button class="tab-btn" onclick="switchViewTab('retailView', this)">Retail Performance</button>
+        <button class="tab-btn" onclick="switchViewTab('pvView', this)">Per Vehicle KPI</button>
+        <button class="tab-btn" onclick="switchViewTab('inventoryView', this)">Inventory Status</button>
+        <button class="tab-btn" onclick="switchViewTab('rankingsView', this)">Risk Analysis Summary</button>
+    </div>
+    <div id="pmsMatrixView" class="data-view active">
+        <table><thead>
+        <tr><th rowspan="2" style="min-width: 180px; background:#1e3a8a;">Location Branch</th><th colspan="3" class="pms-group-header">Air Filter</th><th colspan="3" class="pms-group-header">Belt Water Pump</th><th colspan="3" class="pms-group-header">Brake Fluid</th><th colspan="3" class="pms-group-header">CNG Filter</th><th colspan="3" class="pms-group-header">Coolant</th><th colspan="3" class="pms-group-header">Drain Plug Gasket</th><th colspan="3" class="pms-group-header">Fuel Filter</th><th colspan="3" class="pms-group-header">Oil Filter</th><th colspan="3" class="pms-group-header">Premix Coolant</th><th colspan="3" class="pms-group-header">Spark Plug</th><th rowspan="2" style="background:#10b981; min-width:110px;">Location Avg Fulfill %</th></tr>
+        <tr><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th><th>Req</th><th>Chg</th><th>%</th></tr>
+        </thead><tbody id="pmsMatrixBody"></tbody></table>
+    </div>
+    <div id="retailView" class="data-view"><table><thead><tr id="retailHead"></tr></thead><tbody id="retailBody"></tbody></table></div>
+    <div id="pvView" class="data-view"><table><thead><tr id="pvHead"></tr></thead><tbody id="pvBody"></tbody></table></div>
+    <div id="inventoryView" class="data-view"><table><thead><tr id="inventoryHead"></tr></thead><tbody id="inventoryBody"></tbody></table></div>
+    <div id="rankingsView" class="data-view"><table><thead><tr id="rankingsHead"></tr></thead><tbody id="rankingsBody"></tbody></table></div>
+    <script>
+        const EXCEL_DATA_STORE = {
+            "s1": [
+                {"Loc Desc":"GONDAL-2S","Financial Year":"2025","Net Retail Selling":"455844.76"},
+                {"Loc Desc":"GONDAL-2S","Financial Year":"2026","Net Retail Selling":"202212.81"},
+                {"Loc Desc":"GONDAL-SRV","Financial Year":"2025","Net Retail Selling":"216212.485"},
+                {"Loc Desc":"GONDAL-SRV","Financial Year":"2026","Net Retail Selling":"97657.25"},
+                {"Loc Desc":"JASDAN-SRV","Financial Year":"2025","Net Retail Selling":"158549.31"},
+                {"Loc Desc":"JASDAN-SRV","Financial Year":"2026","Net Retail Selling":"130482.1505"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Financial Year":"2025","Net Retail Selling":"1967890.057"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Financial Year":"2026","Net Retail Selling":"1451128.234091"},
+                {"Loc Desc":"METODA-SRV","Financial Year":"2025","Net Retail Selling":"759428.5915"},
+                {"Loc Desc":"METODA-SRV","Financial Year":"2026","Net Retail Selling":"228494.96"},
+                {"Loc Desc":"RAJKOT","Financial Year":"2025","Net Retail Selling":"1984060.7684"},
+                {"Loc Desc":"RAJKOT","Financial Year":"2026","Net Retail Selling":"1307033.9556905"},
+                {"Loc Desc":"SARDHAR-2S","Financial Year":"2025","Net Retail Selling":"30621.48"},
+                {"Loc Desc":"SARDHAR-2S","Financial Year":"2026","Net Retail Selling":"25464.67"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Financial Year":"2025","Net Retail Selling":"10778.9294"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Financial Year":"2026","Net Retail Selling":"9259.68"},
+                {"Loc Desc":"TANKARA - SRV","Financial Year":"2025","Net Retail Selling":"46531.09"},
+                {"Loc Desc":"TANKARA - SRV","Financial Year":"2026","Net Retail Selling":"30861.02"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Financial Year":"2025","Net Retail Selling":"2116401.3637"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Financial Year":"2026","Net Retail Selling":"1223325.3549"},
+                {"Loc Desc":"WANKANER-SRV","Financial Year":"2025","Net Retail Selling":"218806.445"},
+                {"Loc Desc":"WANKANER-SRV","Financial Year":"2026","Net Retail Selling":"170548.905"}
+            ],
+            "s2": [
+                {"Loc Desc":"GONDAL-2S","Service type":"BODY  REPAIR","Service Load":"30","Net Retail DDL w/o CO-DDL DDT":"195954.43"},
+                {"Loc Desc":"GONDAL-2S","Service type":"BODY QUICK REPAIR","Service Load":"6","Net Retail DDL w/o CO-DDL DDT":"6258.38"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"1ST FREE SERVICE","Service Load":"23","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"2ND FREE SERVICE","Service Load":"30","Net Retail DDL w/o CO-DDL DDT":"502.29"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"3RD FREE SERVICE","Service Load":"24","Net Retail DDL w/o CO-DDL DDT":"9088.32"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"4TH FREE SERVICE","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"225.59"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"ACCESSORIES FITMENT","Service Load":"4","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"1051.25"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"M.O.S.","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"PAID SERVICE","Service Load":"59","Net Retail DDL w/o CO-DDL DDT":"78491.95"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"RUNNING REPAIR","Service Load":"23","Net Retail DDL w/o CO-DDL DDT":"8297.85"},
+                {"Loc Desc":"GONDAL-SRV","Service type":"SERVICE CAMP","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"1ST FREE SERVICE","Service Load":"33","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"2ND FREE SERVICE","Service Load":"44","Net Retail DDL w/o CO-DDL DDT":"1358.31"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"3RD FREE SERVICE","Service Load":"26","Net Retail DDL w/o CO-DDL DDT":"5410.94"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"4TH FREE SERVICE","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"79.11"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"ACCESSORIES FITMENT","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"6","Net Retail DDL w/o CO-DDL DDT":"6075.89"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"PAID SERVICE","Service Load":"70","Net Retail DDL w/o CO-DDL DDT":"102794.2005"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"REPEAT JOB","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"207.55"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"RUNNING REPAIR","Service Load":"19","Net Retail DDL w/o CO-DDL DDT":"14556.15"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"SERVICE CAMP","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"JASDAN-SRV","Service type":"WASHING","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"1ST FREE SERVICE","Service Load":"35","Net Retail DDL w/o CO-DDL DDT":"101.967000000001"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"2ND FREE SERVICE","Service Load":"43","Net Retail DDL w/o CO-DDL DDT":"6004.308045"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"3RD FREE SERVICE","Service Load":"39","Net Retail DDL w/o CO-DDL DDT":"16015.046341"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"4TH FREE SERVICE","Service Load":"13","Net Retail DDL w/o CO-DDL DDT":"4590.760792"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"ACCESSORIES FITMENT","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"BODY  REPAIR","Service Load":"40","Net Retail DDL w/o CO-DDL DDT":"908768.899916"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"BODY QUICK REPAIR","Service Load":"16","Net Retail DDL w/o CO-DDL DDT":"25962.68242"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"39232.232173"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"PAID SERVICE","Service Load":"120","Net Retail DDL w/o CO-DDL DDT":"207509.556078"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"RUNNING REPAIR","Service Load":"34","Net Retail DDL w/o CO-DDL DDT":"75785.620481"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"SERVICE CAMP","Service Load":"11","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Service type":"-","Service Load":"0","Net Retail DDL w/o CO-DDL DDT":"167157.160845"},
+                {"Loc Desc":"METODA-SRV","Service type":"1ST FREE SERVICE","Service Load":"13","Net Retail DDL w/o CO-DDL DDT":"78.1"},
+                {"Loc Desc":"METODA-SRV","Service type":"2ND FREE SERVICE","Service Load":"15","Net Retail DDL w/o CO-DDL DDT":"1023.03"},
+                {"Loc Desc":"METODA-SRV","Service type":"3RD FREE SERVICE","Service Load":"6","Net Retail DDL w/o CO-DDL DDT":"1050.64"},
+                {"Loc Desc":"METODA-SRV","Service type":"ACCESSORIES FITMENT","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"3.06"},
+                {"Loc Desc":"METODA-SRV","Service type":"BODY  REPAIR","Service Load":"17","Net Retail DDL w/o CO-DDL DDT":"149479.12"},
+                {"Loc Desc":"METODA-SRV","Service type":"PAID SERVICE","Service Load":"41","Net Retail DDL w/o CO-DDL DDT":"46623.26"},
+                {"Loc Desc":"METODA-SRV","Service type":"RUNNING REPAIR","Service Load":"20","Net Retail DDL w/o CO-DDL DDT":"11177.68"},
+                {"Loc Desc":"METODA-SRV","Service type":"SERVICE CAMP","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"METODA-SRV","Service type":"-","Service Load":"0","Net Retail DDL w/o CO-DDL DDT":"19060.07"},
+                {"Loc Desc":"RAJKOT","Service type":"1ST FREE SERVICE","Service Load":"54","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"RAJKOT","Service type":"2ND FREE SERVICE","Service Load":"56","Net Retail DDL w/o CO-DDL DDT":"733.622812"},
+                {"Loc Desc":"RAJKOT","Service type":"3RD FREE SERVICE","Service Load":"41","Net Retail DDL w/o CO-DDL DDT":"15521.009951"},
+                {"Loc Desc":"RAJKOT","Service type":"4TH FREE SERVICE","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"646.392094"},
+                {"Loc Desc":"RAJKOT","Service type":"ACCESSORIES FITMENT","Service Load":"15","Net Retail DDL w/o CO-DDL DDT":"5278.9525"},
+                {"Loc Desc":"RAJKOT","Service type":"BODY  REPAIR","Service Load":"64","Net Retail DDL w/o CO-DDL DDT":"954387.496007"},
+                {"Loc Desc":"RAJKOT","Service type":"BODY QUICK REPAIR","Service Load":"41","Net Retail DDL w/o CO-DDL DDT":"8289.692166"},
+                {"Loc Desc":"RAJKOT","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"6","Net Retail DDL w/o CO-DDL DDT":"22841.822448"},
+                {"Loc Desc":"RAJKOT","Service type":"PAID SERVICE","Service Load":"142","Net Retail DDL w/o CO-DDL DDT":"201535.1978765"},
+                {"Loc Desc":"RAJKOT","Service type":"REPEAT JOB","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"RAJKOT","Service type":"RUNNING REPAIR","Service Load":"55","Net Retail DDL w/o CO-DDL DDT":"97111.734325"},
+                {"Loc Desc":"RAJKOT","Service type":"SERVICE CAMP","Service Load":"47","Net Retail DDL w/o CO-DDL DDT":"581.342222"},
+                {"Loc Desc":"RAJKOT","Service type":"TV-REFURBISHMENT (MECH & BODY)","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"106.693289"},
+                {"Loc Desc":"RAJKOT","Service type":"WASHING","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"1ST FREE SERVICE","Service Load":"7","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"2ND FREE SERVICE","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"173.08"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"3RD FREE SERVICE","Service Load":"8","Net Retail DDL w/o CO-DDL DDT":"1541.81"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"4TH FREE SERVICE","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"81.88"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"PAID SERVICE","Service Load":"16","Net Retail DDL w/o CO-DDL DDT":"16802.15"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"RUNNING REPAIR","Service Load":"7","Net Retail DDL w/o CO-DDL DDT":"6865.75"},
+                {"Loc Desc":"SARDHAR-2S","Service type":"SERVICE CAMP","Service Load":"19","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"1ST FREE SERVICE","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"2ND FREE SERVICE","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"79.11"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"3RD FREE SERVICE","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"4TH FREE SERVICE","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"79.11"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"ACCESSORIES FITMENT","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"M.O.S.","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"PAID SERVICE","Service Load":"9","Net Retail DDL w/o CO-DDL DDT":"9101.46"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"RUNNING REPAIR","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Service type":"SERVICE CAMP","Service Load":"6","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"1ST FREE SERVICE","Service Load":"13","Net Retail DDL w/o CO-DDL DDT":"4271.47"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"2ND FREE SERVICE","Service Load":"20","Net Retail DDL w/o CO-DDL DDT":"454.14"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"3RD FREE SERVICE","Service Load":"8","Net Retail DDL w/o CO-DDL DDT":"1400.33"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"ACCESSORIES FITMENT","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"PAID SERVICE","Service Load":"30","Net Retail DDL w/o CO-DDL DDT":"22464.17"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"RUNNING REPAIR","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"2270.91"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"SERVICE CAMP","Service Load":"4","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"TANKARA - SRV","Service type":"WASHING","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"1ST FREE SERVICE","Service Load":"31","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"2ND FREE SERVICE","Service Load":"41","Net Retail DDL w/o CO-DDL DDT":"2062.44"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"3RD FREE SERVICE","Service Load":"29","Net Retail DDL w/o CO-DDL DDT":"3671.57"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"ACCESSORIES FITMENT","Service Load":"8","Net Retail DDL w/o CO-DDL DDT":"1816.41"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"BEFORE DELEIVERY WORK","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"1182.41"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"BODY  REPAIR","Service Load":"76","Net Retail DDL w/o CO-DDL DDT":"693414.3"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"BODY QUICK REPAIR","Service Load":"35","Net Retail DDL w/o CO-DDL DDT":"1034.66"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"18","Net Retail DDL w/o CO-DDL DDT":"30189.04"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"M.O.S.","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"199.78"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"PAID SERVICE","Service Load":"207","Net Retail DDL w/o CO-DDL DDT":"374865.8549"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"RUNNING REPAIR","Service Load":"66","Net Retail DDL w/o CO-DDL DDT":"102934.01"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"SERVICE CAMP","Service Load":"56","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"TRUEVALUE 1ST SERVICE","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"WASHING","Service Load":"3","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Service type":"-","Service Load":"0","Net Retail DDL w/o CO-DDL DDT":"11954.88"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"1ST FREE SERVICE","Service Load":"24","Net Retail DDL w/o CO-DDL DDT":"42.99"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"2ND FREE SERVICE","Service Load":"26","Net Retail DDL w/o CO-DDL DDT":"534.5"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"3RD FREE SERVICE","Service Load":"28","Net Retail DDL w/o CO-DDL DDT":"2595.4"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"4TH FREE SERVICE","Service Load":"2","Net Retail DDL w/o CO-DDL DDT":"257.3"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"ACCESSORIES FITMENT","Service Load":"8","Net Retail DDL w/o CO-DDL DDT":"8623.02"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"CUSTOMER DEMANDED SERVICE","Service Load":"4","Net Retail DDL w/o CO-DDL DDT":"1395.28"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"M.O.S.","Service Load":"1","Net Retail DDL w/o CO-DDL DDT":"0"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"PAID SERVICE","Service Load":"86","Net Retail DDL w/o CO-DDL DDT":"117465.705"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"RUNNING REPAIR","Service Load":"14","Net Retail DDL w/o CO-DDL DDT":"39634.71"},
+                {"Loc Desc":"WANKANER-SRV","Service type":"SERVICE CAMP","Service Load":"5","Net Retail DDL w/o CO-DDL DDT":"0"}
+            ],
+            "s3": [
+                {"Month Year":"Jun 2026","Loc Desc":"GONDAL-2S","Stock Quantity":"3543.2","Stock Value":"319748.178","Avg. Net Retail last 3 months Value":"359068","Slow Moving >6 Month Parts Value":"35022.52","Slow Moving >1 Year Parts Value":"26228.27"},
+                {"Month Year":"Jun 2026","Loc Desc":"GONDAL-SRV","Stock Quantity":"3564","Stock Value":"432128.143","Avg. Net Retail last 3 months Value":"296766.526","Slow Moving >6 Month Parts Value":"55115.96","Slow Moving >1 Year Parts Value":"24458.97"},
+                {"Month Year":"Jun 2026","Loc Desc":"JASDAN-SRV","Stock Quantity":"3845.65","Stock Value":"215515.059","Avg. Net Retail last 3 months Value":"161916.99","Slow Moving >6 Month Parts Value":"33545.65","Slow Moving >1 Year Parts Value":"13930.18"},
+                {"Month Year":"Jun 2026","Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Stock Quantity":"25354.16","Stock Value":"4415127.8611","Avg. Net Retail last 3 months Value":"1952229.94740066","Slow Moving >6 Month Parts Value":"756848.18","Slow Moving >1 Year Parts Value":"536911.79"},
+                {"Month Year":"Jun 2026","Loc Desc":"METODA-SRV","Stock Quantity":"2172.3","Stock Value":"510056.3705","Avg. Net Retail last 3 months Value":"682391.627078333","Slow Moving >6 Month Parts Value":"87526.19","Slow Moving >1 Year Parts Value":"33381.09"},
+                {"Month Year":"Jun 2026","Loc Desc":"OPP.THE ONE WORD-S(NEXA)","Stock Quantity":"6","Stock Value":"4181.82","Avg. Net Retail last 3 months Value":"0","Slow Moving >6 Month Parts Value":"265.22","Slow Moving >1 Year Parts Value":"0"},
+                {"Month Year":"Jun 2026","Loc Desc":"RAJKOT","Stock Quantity":"33166.4","Stock Value":"4600133.05650001","Avg. Net Retail last 3 months Value":"2050506.78791117","Slow Moving >6 Month Parts Value":"1019670.552","Slow Moving >1 Year Parts Value":"703632.28"},
+                {"Month Year":"Jun 2026","Loc Desc":"SARDHAR-2S","Stock Quantity":"1882","Stock Value":"47844.06","Avg. Net Retail last 3 months Value":"21249.84","Slow Moving >6 Month Parts Value":"4907.63","Slow Moving >1 Year Parts Value":"2327.7"},
+                {"Month Year":"Jun 2026","Loc Desc":"SHAPAR-SRV(RO)","Stock Quantity":"1268","Stock Value":"36234.17","Avg. Net Retail last 3 months Value":"22924.9166666667","Slow Moving >6 Month Parts Value":"7211.92","Slow Moving >1 Year Parts Value":"6471.8"},
+                {"Month Year":"Jun 2026","Loc Desc":"TANKARA - SRV","Stock Quantity":"1674.09","Stock Value":"103820.6525","Avg. Net Retail last 3 months Value":"41901.44","Slow Moving >6 Month Parts Value":"10127.2","Slow Moving >1 Year Parts Value":"2350.51"},
+                {"Month Year":"Jun 2026","Loc Desc":"UNIVERSITY ROAD - SRV","Stock Quantity":"15060.82","Stock Value":"2652276.1337","Avg. Net Retail last 3 months Value":"1975009.53173333","Slow Moving >6 Month Parts Value":"533573.93","Slow Moving >1 Year Parts Value":"308404.55"},
+                {"Month Year":"Jun 2026","Loc Desc":"WANKANER-SRV","Stock Quantity":"1310.93","Stock Value":"242583.137","Avg. Net Retail last 3 months Value":"204326.2085","Slow Moving >6 Month Parts Value":"24342.643","Slow Moving >1 Year Parts Value":"12688.28"}
+            ],
+            "s4": [
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Air filter","Req":6 ,"Chg":6},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Belt water pump","Req":4 ,"Chg":4},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Brake fluid","Req":8 ,"Chg":7},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"CNG FILTER","Req":5 ,"Chg":5},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Coolant","Req":11 ,"Chg":10},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"DRAIN PLUG GASKET","Req":37 ,"Chg":32},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Fuel Filter","Req":5 ,"Chg":4},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"ISG BELT GENERATOR","Req":2 ,"Chg":2},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Oil filter","Req":37 ,"Chg":37},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"PREMIX COOLANT","Req":11 ,"Chg":10},
+                {"Loc Desc":"GONDAL-SRV","Part Group":"Spark plug","Req":5 ,"Chg":5},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Air filter","Req":15 ,"Chg":15},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Belt water pump","Req":7 ,"Chg":5},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Brake fluid","Req":18 ,"Chg":18},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"CNG FILTER","Req":16 ,"Chg":14},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Coolant","Req":28 ,"Chg":27},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"DRAIN PLUG GASKET","Req":55 ,"Chg":55},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Fuel Filter","Req":12 ,"Chg":10},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Oil filter","Req":55 ,"Chg":55},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"PREMIX COOLANT","Req":27 ,"Chg":26},
+                {"Loc Desc":"JASDAN-SRV","Part Group":"Spark plug","Req":17 ,"Chg":16},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Air filter","Req":9 ,"Chg":9},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Brake fluid","Req":10 ,"Chg":9},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"CNG FILTER","Req":11 ,"Chg":11},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Coolant","Req":17 ,"Chg":17},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"DRAIN PLUG GASKET","Req":85 ,"Chg":83},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Fuel Filter","Req":7 ,"Chg":7},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Oil filter","Req":85 ,"Chg":85},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"PREMIX COOLANT","Req":17 ,"Chg":17},
+                {"Loc Desc":"KUVADVA ROAD, RAJKOT-SRV","Part Group":"Spark plug","Req":5 ,"Chg":5},
+                {"Loc Desc":"METODA-SRV","Part Group":"Air filter","Req":5 ,"Chg":5},
+                {"Loc Desc":"METODA-SRV","Part Group":"Belt water pump","Req":3 ,"Chg":3},
+                {"Loc Desc":"METODA-SRV","Part Group":"Brake fluid","Req":5 ,"Chg":5},
+                {"Loc Desc":"METODA-SRV","Part Group":"CNG FILTER","Req":5 ,"Chg":5},
+                {"Loc Desc":"METODA-SRV","Part Group":"Coolant","Req":8 ,"Chg":7},
+                {"Loc Desc":"METODA-SRV","Part Group":"DRAIN PLUG GASKET","Req":31 ,"Chg":30},
+                {"Loc Desc":"METODA-SRV","Part Group":"Fuel Filter","Req":5 ,"Chg":5},
+                {"Loc Desc":"METODA-SRV","Part Group":"Oil filter","Req":31 ,"Chg":31},
+                {"Loc Desc":"METODA-SRV","Part Group":"PREMIX COOLANT","Req":8 ,"Chg":7},
+                {"Loc Desc":"METODA-SRV","Part Group":"Spark plug","Req":4 ,"Chg":4},
+                {"Loc Desc":"RAJKOT","Part Group":"Air filter","Req":27 ,"Chg":25},
+                {"Loc Desc":"RAJKOT","Part Group":"Belt water pump","Req":14 ,"Chg":12},
+                {"Loc Desc":"RAJKOT","Part Group":"Brake fluid","Req":37 ,"Chg":34},
+                {"Loc Desc":"RAJKOT","Part Group":"CNG FILTER","Req":16 ,"Chg":14},
+                {"Loc Desc":"RAJKOT","Part Group":"Coolant","Req":48 ,"Chg":46},
+                {"Loc Desc":"RAJKOT","Part Group":"DRAIN PLUG GASKET","Req":103 ,"Chg":101},
+                {"Loc Desc":"RAJKOT","Part Group":"Fuel Filter","Req":17 ,"Chg":16},
+                {"Loc Desc":"RAJKOT","Part Group":"ISG BELT GENERATOR","Req":1 ,"Chg":1},
+                {"Loc Desc":"RAJKOT","Part Group":"Oil filter","Req":103 ,"Chg":103},
+                {"Loc Desc":"RAJKOT","Part Group":"PREMIX COOLANT","Req":47 ,"Chg":45},
+                {"Loc Desc":"RAJKOT","Part Group":"Spark plug","Req":14 ,"Chg":13},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Air filter","Req":1 ,"Chg":0},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Belt water pump","Req":1 ,"Chg":0},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Brake fluid","Req":1 ,"Chg":1},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"CNG FILTER","Req":3 ,"Chg":3},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Coolant","Req":2 ,"Chg":1},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"DRAIN PLUG GASKET","Req":9 ,"Chg":4},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Fuel Filter","Req":1 ,"Chg":0},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"ISG BELT GENERATOR","Req":1 ,"Chg":0},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"Oil filter","Req":9 ,"Chg":9},
+                {"Loc Desc":"SARDHAR-2S","Part Group":"PREMIX COOLANT","Req":2 ,"Chg":0},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Air filter","Req":3 ,"Chg":3},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Belt water pump","Req":1 ,"Chg":1},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Brake fluid","Req":4 ,"Chg":4},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"CNG FILTER","Req":1 ,"Chg":1},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Coolant","Req":4 ,"Chg":4},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"DRAIN PLUG GASKET","Req":6 ,"Chg":6},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Fuel Filter","Req":1 ,"Chg":1},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Oil filter","Req":6 ,"Chg":6},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"PREMIX COOLANT","Req":4 ,"Chg":4},
+                {"Loc Desc":"SHAPAR-SRV(RO)","Part Group":"Spark plug","Req":1 ,"Chg":1},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Air filter","Req":2 ,"Chg":2},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Belt water pump","Req":1 ,"Chg":1},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Brake fluid","Req":2 ,"Chg":2},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"CNG FILTER","Req":3 ,"Chg":0},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Coolant","Req":4 ,"Chg":4},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"DRAIN PLUG GASKET","Req":20 ,"Chg":20},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Fuel Filter","Req":2 ,"Chg":2},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Oil filter","Req":20 ,"Chg":20},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"PREMIX COOLANT","Req":4 ,"Chg":3},
+                {"Loc Desc":"TANKARA - SRV","Part Group":"Spark plug","Req":4 ,"Chg":3},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Air filter","Req":40 ,"Chg":40},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Belt water pump","Req":13 ,"Chg":13},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Brake fluid","Req":58 ,"Chg":55},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"CNG FILTER","Req":20 ,"Chg":19},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Coolant","Req":67 ,"Chg":67},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"DRAIN PLUG GASKET","Req":189 ,"Chg":187},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Fuel Filter","Req":33 ,"Chg":33},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"ISG BELT GENERATOR","Req":6 ,"Chg":6},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Oil filter","Req":189 ,"Chg":188},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"PREMIX COOLANT","Req":67 ,"Chg":67},
+                {"Loc Desc":"UNIVERSITY ROAD - SRV","Part Group":"Spark plug","Req":22 ,"Chg":22},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Air filter","Req":11 ,"Chg":11},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Belt water pump","Req":5 ,"Chg":5},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Brake fluid","Req":12 ,"Chg":12},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"CNG FILTER","Req":21 ,"Chg":14},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Coolant","Req":25 ,"Chg":24},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"DRAIN PLUG GASKET","Req":48 ,"Chg":44},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Fuel Filter","Req":9 ,"Chg":9},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"ISG BELT GENERATOR","Req":1 ,"Chg":1},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Oil filter","Req":48 ,"Chg":48},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"PREMIX COOLANT","Req":25 ,"Chg":24},
+                {"Loc Desc":"WANKANER-SRV","Part Group":"Spark plug","Req":7 ,"Chg":7}
+            ]
+        };
+        const targetGroups = ['AIR FILTER', 'BELT WATER PUMP', 'BRAKE FLUID', 'CNG FILTER', 'COOLANT', 'DRAIN PLUG GASKET', 'FUEL FILTER', 'OIL FILTER', 'PREMIX COOLANT', 'SPARK PLUG'];
+        function switchViewTab(viewId, el) { document.querySelectorAll('.data-view').forEach(x=>x.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active')); document.getElementById(viewId).classList.add('active'); el.classList.add('active'); }
+        window.onload = function() { processCompleteDashboard(); };
+        function processCompleteDashboard() {
+            let s1 = EXCEL_DATA_STORE.s1, s2 = EXCEL_DATA_STORE.s2, s3 = EXCEL_DATA_STORE.s3, s4 = EXCEL_DATA_STORE.s4;
+            let tLy = 0, tCy = 0, lData = {};
+            s1.forEach(r => { let l = r['Loc Desc']; if(!l) return; if(!lData[l]) lData[l]={ly:0,cy:0}; let v = parseFloat(r['Net Retail Selling'])||0; if(parseInt(r['Financial Year'])===2025) {lData[l].ly+=v; tLy+=v;} if(parseInt(r['Financial Year'])===2026) {lData[l].cy+=v; tCy+=v;} });
+            let gPct = tLy ? ((tCy - tLy)/tLy*100) : 0; let tStr = tLy * 1.1; let tAch = tStr ? (tCy/tStr*100) : 0;
+            document.getElementById('salesKpiContainer').innerHTML = `<div class='kpi-card'><b>Retail FY 2025 Total</b><h2>Rs. ${tLy.toLocaleString('en-IN',{maximumFractionDigits:0})}</h2></div><div class='kpi-card'><b>Retail FY 2026 Current</b><h2>Rs. ${tCy.toLocaleString('en-IN',{maximumFractionDigits:0})}</h2></div><div class='kpi-card'><b>Group Growth %</b><h2>${gPct.toFixed(1)}%</h2></div><div class='kpi-card'><b>Growth Plan Achievement (10%)</b><h2>${tAch.toFixed(1)}%</h2></div>`;
+            let pmsStructure = {}; 
+            s4.forEach(row => { 
+                let loc = row['Loc Desc']; if(!loc) return;
+                let group = (row['Part Group'] || '').toUpperCase().trim(); 
+                if(!pmsStructure[loc]){ pmsStructure[loc]={}; targetGroups.forEach(g=>pmsStructure[loc][g]={req:0,chg:0}); }
+                if(pmsStructure[loc][group]){ pmsStructure[loc][group].req += parseInt(row.Req)||0; pmsStructure[loc][group].chg += parseInt(row.Chg)||0; }
+            });
+            Object.keys(lData).forEach(loc => { if(!pmsStructure[loc]){ pmsStructure[loc]={}; targetGroups.forEach(g=>pmsStructure[loc][g]={req:0,chg:0}); } });
+            let matrixHtml = '', grandTotalReq = 0, grandTotalChg = 0;
+            let sortedLocs = Object.keys(pmsStructure).sort();
+            sortedLocs.forEach(loc => { 
+                matrixHtml += `<tr><td class='loc-col'>${loc}</td>`; let locReqSum=0, locChgSum=0;
+                targetGroups.forEach(group => { let data = pmsStructure[loc][group]; locReqSum+=data.req; locChgSum+=data.chg; grandTotalReq+=data.req; grandTotalChg+=data.chg;
+                    if(data.req > 0){ let pct = (data.chg/data.req)*100; matrixHtml += `<td>${data.req}</td><td>${data.chg}</td><td class='${pct>=98?'target-met':'target-miss'}'>${pct.toFixed(1)}%</td>`; }
+                    else { matrixHtml += `<td>0</td><td>0</td><td class='target-none'>0.0%</td>`; }
+                });
+                let locAvgPct = locReqSum > 0 ? (locChgSum/locReqSum*100) : 0;
+                matrixHtml += `<td class='total-col ${locAvgPct>=98?'target-met':'target-miss'}'>${locAvgPct.toFixed(1)}%</td></tr>`;
+            });
+            document.getElementById('pmsMatrixBody').innerHTML = matrixHtml || '<tr><td colspan="32">No PMS Matrix data compiled. Check raw sheets.</td></tr>';
+            let groupPmsFulfillment = grandTotalReq ? (grandTotalChg / grandTotalReq * 100) : 0;
+            document.getElementById('retailHead').innerHTML = '<th>Location Branch</th><th>FY 2025 Sales</th><th>FY 2026 Sales</th><th>Growth %</th><th>10% Growth Target</th><th>Achievement %</th>';
+            let rHtml = ''; for(let l in lData){ let d=lData[l], rg=d.ly?((d.cy-d.ly)/d.ly*100):0, rt=d.ly*1.1, ra=rt?(d.cy/rt*100):0; rHtml+=`<tr><td class='loc-col'>${l}</td><td>Rs. ${d.ly.toLocaleString('en-IN')}</td><td>Rs. ${d.cy.toLocaleString('en-IN')}</td><td>${rg.toFixed(1)}%</td><td>Rs. ${rt.toLocaleString('en-IN')}</td><td>${ra.toFixed(1)}%</td></tr>`; } document.getElementById('retailBody').innerHTML = rHtml || '<tr><td colspan="6">No records available</td></tr>';
+            let pvM = {}; s2.forEach(r => { let l = r['Loc Desc']; if(!l) return; if(!pvM[l]) pvM[l]={p:0,r:0,b:0}; let ld = parseFloat(r['Service Load'])||0, rt = parseFloat(r['Net Retail DDL w/o CO-DDL DDT'])||0, av = ld?(rt/ld):0, st = (r['Service type']||'').toUpperCase().trim(); if(st==='PAID SERVICE') pvM[l].p = av; if(st==='RUNNING REPAIR') pvM[l].r = av; if(st==='BODY REPAIR'||st==='BODY  REPAIR') pvM[l].b = av; });
+            document.getElementById('pvHead').innerHTML = '<th>Location Branch</th><th>Paid Service Part Absorption</th><th>Running Repair Part Absorption</th><th>Body Repair Part Absorption</th>';
+            let pvHtml = ''; for(let l in pvM){ pvHtml+=`<tr><td class='loc-col'>${l}</td><td>Rs. ${pvM[l].p.toFixed(2)}</td><td>Rs. ${pvM[l].r.toFixed(2)}</td><td>Rs. ${pvM[l].b.toFixed(2)}</td></tr>`; } document.getElementById('pvBody').innerHTML = pvHtml || '<tr><td colspan="4">No metrics parsed</td></tr>';
+            document.getElementById('inventoryHead').innerHTML = '<th>Location Branch</th><th>Current Stock Value</th><th>3-Month Avg Retail</th><th>Calculated Stock Days Runway</th><th>Dead Stock Liability (>1 Year)</th>';
+            let iHtml = '', hD = ['-', 0], hS = ['-', 0], aSt = 0, aSl = 0, aRt = 0;
+            s3.forEach(r => { let l = r['Loc Desc']; if(!l) return; let cs = parseFloat(r['Stock Value'])||0, am = parseFloat(r['Avg. Net Retail last 3 months Value'])||0, as = parseFloat(r['Slow Moving >1 Year Parts Value'])||0, dc = (am/30)?(cs/(am/30)):0; aSt+=cs; aSl+=as; aRt+=am; if(dc>hD[1]) hD=[l,dc]; if(as>hS[1]) hS=[l,as]; iHtml+=`<tr><td class='loc-col'>${l}</td><td>Rs. ${cs.toLocaleString('en-IN')}</td><td>Rs. ${am.toLocaleString('en-IN')}</td><td>${dc.toFixed(1)} Days</td><td>Rs. ${as.toLocaleString('en-IN')}</td></tr>`; });
+            document.getElementById('inventoryBody').innerHTML = iHtml || '<tr><td colspan="5">No asset telemetry logs found</td></tr>'; let gD = (aRt/30)?(aSt/(aRt/30)):0;
+            document.getElementById('inventoryKpiContainer').innerHTML = `<div class='kpi-card'><b>Total Inventory Asset</b><h2>Rs. ${(aSt/10000000).toFixed(2)} Cr</h2></div><div class='kpi-card'><b>Group Stock Days</b><h2>${gD.toFixed(1)} Days</h2></div><div class='kpi-card'><b>Total Dead Stock (>1Y)</b><h2>Rs. ${(aSl/100000).toFixed(2)} Lakh</h2></div><div class='kpi-card'><b>Group PMS Fulfillment Rate</b><h2 class='${groupPmsFulfillment>=98?'target-met':'target-miss'}'>${groupPmsFulfillment.toFixed(1)}%</h2></div>`;
+            document.getElementById('rankingsHead').innerHTML = '<th>KPI Risk Category</th><th>Outlier Branch Location</th><th>Value Metric</th>';
+            document.getElementById('rankingsBody').innerHTML = `<tr><td><b>Highest Stock Runway Days Exposure</b></td><td>${hD[0]}</td><td>${hD[1].toFixed(1)} Days</td></tr><tr><td><b>Highest Dead Stock Asset Value</b></td><td>${hS[0]}</td><td>Rs. ${hS[1].toLocaleString('en-IN')}</td></tr>`;
+        }
+        async function exportMasterPDF() { const { jsPDF } = window.jspdf; const canvas = await html2canvas(document.body, { scale: 1.2, useCORS: true, backgroundColor: '#0b1f4d' }); const imgData = canvas.toDataURL('image/png'); const pdf = new jsPDF('l', 'mm', 'a2'); const w = pdf.internal.pageSize.getWidth(); pdf.addImage(imgData, 'PNG', 0, 0, w, (canvas.height * w) / canvas.width); pdf.save('ATUL_MOTORS_MASTER_EXECUTIVE_REPORT.pdf'); }
+    </script>
+</body>
+</html>
